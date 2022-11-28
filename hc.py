@@ -198,10 +198,8 @@ def main(ip):
                         output = x.split()
                         print(output[-1])
 
-
-
         out.append("*" * 80)
-        ssh.close()
+        #ssh.close()
 
     except Exception as e:
         print(ip, e)

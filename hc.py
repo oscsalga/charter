@@ -76,14 +76,15 @@ def main(ip):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(ip, port, username, password, timeout=30,
+        ssh.connect(ip, port, username, password, timeout=90,
                     allow_agent=False,
                     look_for_keys=False)
-        time.sleep(5)
+        time.sleep(10)
         print("*" * 50)
         print("*** HC ***")
         print("*" * 50)
         print("\n")
+        out.append('Hostname: ' + ip)
         for cmd in commands:
             stdin, stdout, stderr = ssh.exec_command(cmd, timeout=90)
             time.sleep(2)

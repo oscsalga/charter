@@ -18,7 +18,7 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'", 
             "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
-            "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in 'No operational'",
+            "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
             "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
@@ -90,11 +90,6 @@ def main(ip):
             f.write(ip + ' No se conecta\n\n')
 
     time.sleep(10)
-    print("*" * 50)
-    print("*** HC ***")
-    print("*" * 50)
-    print("\n")
-    out.append('Hostname: ' + ip)
     for cmd in commands:
         if tunnel:
             try:
@@ -102,6 +97,11 @@ def main(ip):
                 outlines = stdout.readlines()
                 time.sleep(2)
                 resp = ''.join(outlines)
+                print("*" * 50)
+                print("*** HC ***")
+                print("*" * 50)
+                print("\n")
+                out.append('Hostname: ' + ip)
                 if "Cmd exec error" not in resp:
                     if "ver" in cmd:
                         print("*** VERSION ***")
@@ -211,12 +211,14 @@ def main(ip):
                                 out.append(output)
                                 print("\n")
             except Exception as e:
-                print(e)
+                print("ERRORRRRRRRR" + str(e))
                 continue
+            finally:
+                ssh.close()
 
 
     out.append("*" * 80)
-    ssh.close()
+
 
     with open(ip + ".txt", "a") as f:
         if out:

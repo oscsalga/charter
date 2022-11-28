@@ -11,14 +11,14 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'cisco!123'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'", 
             "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
-            "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down",
+            "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
             "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
@@ -83,52 +83,55 @@ def main(ip):
         ssh.connect(ip, port, username, password, timeout=90,
                     allow_agent=False,
                     look_for_keys=False)
+        time.sleep(10)
         tunnel = ssh.get_transport().is_alive()
     except paramiko.AuthenticationException as e:
         print(ip, e)
         with open(archivo + "-" + str(date_time) + ".txt", "a") as f:
             f.write(ip + ' No se conecta\n\n')
 
-    time.sleep(10)
-    for cmd in commands:
-        if tunnel:
+    if tunnel:
+        print("*" * 50)
+        print("*** HC ***")
+        print("*" * 50)
+        print("\n")
+        print('Hostname: ' + ip)
+        for cmd in commands:
+
             try:
                 stdin, stdout, stderr = ssh.exec_command(cmd, timeout=90)
                 outlines = stdout.readlines()
                 time.sleep(2)
                 resp = ''.join(outlines)
-                print("*" * 50)
-                print("*** HC ***")
-                print("*" * 50)
-                print("\n")
-                out.append('Hostname: ' + ip)
+
                 if "Cmd exec error" not in resp:
                     if "ver" in cmd:
                         print("*** VERSION ***")
                         versiones = re.findall("\d.*", resp)
-                        print(f'System {versiones[1]} Kickstart: {versiones[0]}')
-                        out.append("*** VERSION ***")
-                        out.append(f'System {versiones[1]} Kickstart: {versiones[0]}')
+                        print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                        out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                        print("*" * 50)
                         print("\n")
 
                     if "vrf" in cmd:
                         if resp:
+                            print("*** VRF ***")
+                            out.append("*** VRF ***")
                             for x in resp.splitlines():
                                 output = x.split()
                                 if output[2] == "Down":
-                                    print("*** VRF ***")
-                                    out.append("*** VRF ***")
                                     print(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                                     out.append(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                             print("\n")
 
                     if "show license usage" in cmd:
                         if resp:
+                            print("*** LICENSE ***")
+                            out.append("*** LICENSE ***")
                             for x in resp.splitlines():
                                 output = x.split()
                                 if output[-1] != "-":
-                                    print("*** LICENSE ***")
-                                    out.append("*** LICENSE ***")
+
                                     print(f"License: {output[0]} State: {output[-1]}")
                                     out.append(f"License: {output[0]} State: {output[-1]}")
                                     print("\n")
@@ -211,19 +214,17 @@ def main(ip):
                                 out.append(output)
                                 print("\n")
             except Exception as e:
-                print("ERRORRRRRRRR" + str(e))
+                print(e)
                 continue
-            finally:
-                ssh.close()
-
+        with open(ip + ".txt", "a") as f:
+            if out:
+                for x in out:
+                    f.write(x + "\n\n")
 
     out.append("*" * 80)
+    ssh.close()
 
 
-    with open(ip + ".txt", "a") as f:
-        if out:
-            for x in out:
-                f.write(x + "\n\n")
 
 
 if __name__ == '__main__':

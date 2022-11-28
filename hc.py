@@ -196,12 +196,17 @@ def main(ip):
                 if "show ip bgp summary vrf all" in cmd:
                     for x in resp.splitlines():
                         output = x.split()
-                        print(output[-1])
+                        if output[-1] == "Idle":
+                            print("*** FEX ***")
+                            out.append("*** FEX ***")
+                            print(output)
+                            out.append(output)
+                            print("\n")
 
         out.append("*" * 80)
         #ssh.close()
 
-    except Exception as e:
+    except paramiko.AuthenticationException as e:
         print(ip, e)
         with open(archivo + "-" + str(date_time) + ".txt", "a") as f:
             f.write(ip + ' No se conecta\n\n')

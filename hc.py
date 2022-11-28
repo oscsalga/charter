@@ -11,8 +11,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'CXlabs.123'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'", 
@@ -20,7 +20,8 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in 'No operational'",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
-            "show fex | ex Online | ex FEX | ex Number | ex ----------------"]
+            "show fex | ex Online | ex FEX | ex Number | ex ----------------",
+            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
 
 
 archivo = "salida.txt"
@@ -35,7 +36,7 @@ def find_values(id, json_repr):
             pass
         return a_dict
 
-    json.loads(json_repr, object_hook=_decode_dict) # Return value ignored.
+    json.loads(json_repr, object_hook=_decode_dict)  # Return value ignored.
     return results
 
 
@@ -189,6 +190,15 @@ def main(ip):
                             print(x)
                             out.append(x)
                             print("\n")
+
+                if "show ip bgp summary vrf all" in cmd:
+                    for x in resp.splitlines():
+                        output = x.split()
+                        print(output[-1])
+
+
+
+        out.append("*" * 80)
         ssh.close()
 
     except Exception as e:
@@ -197,8 +207,9 @@ def main(ip):
             f.write(ip + ' No se conecta\n\n')
 
     with open(ip + ".txt", "a") as f:
-        for x in out:
-            f.write(x + "\n\n")
+        if not out:
+            for x in out:
+                f.write(x + "\n\n")
 
 
 if __name__ == '__main__':

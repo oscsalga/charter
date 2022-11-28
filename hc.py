@@ -26,6 +26,7 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
 
 archivo = "salida.txt"
 
+
 def find_values(id, json_repr):
     results = []
 
@@ -208,9 +209,9 @@ def main(ip):
                     if "show ip bgp summary vrf all" in cmd:
                         for x in resp.splitlines():
                             output = x.split()
-                            if output[-1] == "Idle":
-                                print("*** FEX ***")
-                                out.append("*** FEX ***")
+                            if output[-1] != "Idle":
+                                print("*** BGP ***")
+                                out.append("*** BGP ***")
                                 print(output)
                                 out.append(output)
                                 print("\n")
@@ -224,8 +225,6 @@ def main(ip):
 
     out.append("*" * 80)
     ssh.close()
-
-
 
 
 if __name__ == '__main__':

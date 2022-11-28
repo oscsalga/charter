@@ -125,10 +125,11 @@ def main(ip):
 
                 if "show module" in cmd:
                     if resp:
+                        print("*** MODULE ***")
+                        out.append("*** MODULE ***")
                         for x in resp.splitlines():
                             if x:
-                                print("*** MODULE ***")
-                                out.append("*** MODULE ***")
+
                                 print(x)
                                 out.append(x)
                     print("\n")
@@ -207,7 +208,7 @@ def main(ip):
             f.write(ip + ' No se conecta\n\n')
 
     with open(ip + ".txt", "a") as f:
-        if not out:
+        if out:
             for x in out:
                 f.write(x + "\n\n")
 

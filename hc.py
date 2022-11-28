@@ -188,7 +188,7 @@ def main(ip):
                             print(x)
                             out.append(x)
                             print("\n")
-
+        ssh.close()
 
     except Exception as e:
         print(ip, e)

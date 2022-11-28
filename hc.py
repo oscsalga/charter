@@ -12,7 +12,7 @@ with open('equipos') as f:
 
 port = 22
 username = 'admin'
-password = 'cisco!123'
+password = 'CXlabs.123'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'", 
@@ -110,6 +110,7 @@ def main(ip):
                         versiones = re.findall("\d.*", resp)
                         print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                         out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                        out.append("*" * 50)
                         print("*" * 50)
                         print("\n")
 
@@ -126,12 +127,12 @@ def main(ip):
 
                     if "show license usage" in cmd:
                         if resp:
-                            print("*** LICENSE ***")
-                            out.append("*** LICENSE ***")
+
                             for x in resp.splitlines():
                                 output = x.split()
                                 if output[-1] != "-":
-
+                                    print("*** LICENSE ***")
+                                    out.append("*** LICENSE ***")
                                     print(f"License: {output[0]} State: {output[-1]}")
                                     out.append(f"License: {output[0]} State: {output[-1]}")
                                     print("\n")

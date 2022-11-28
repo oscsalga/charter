@@ -195,7 +195,7 @@ def main(ip):
         with open(archivo + "-" + str(date_time) + ".txt", "a") as f:
             f.write(ip + ' No se conecta\n\n')
 
-    with open("salida.txt", "a") as f:
+    with open(ip + ".txt", "a") as f:
         for x in out:
             f.write(x + "\n\n")
 

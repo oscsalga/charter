@@ -103,11 +103,12 @@ def main(ip):
 
                 if "vrf" in cmd:
                     if resp:
-                        print("*** VRF ***")
-                        out.append("*** VRF ***")
+
                         for x in resp.splitlines():
                             output = x.split()
                             if output[2] == "Down":
+                                print("*** VRF ***")
+                                out.append("*** VRF ***")
                                 print(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                                 out.append(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                         print("\n")

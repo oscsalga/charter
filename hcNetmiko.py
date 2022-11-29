@@ -44,14 +44,19 @@ def conectar(ip):
 
 
 def ejecutar_comando(tunnel, comando):
-    output = ""
     try:
-        output = tunnel.send_command(comando, strip_command=True, strip_prompt=True, max_loops=5000, delay_factor=5000, read_timeout=150)
+        output = tunnel.send_command(comando, strip_command=True, strip_prompt=True, max_loops=5000, delay_factor=5000, read_timeout=5000)
         # output = tunnel.send_command(comando, expect_string="#", delay_factor=5)
+
+        return output
 
     except Exception as e:
         print(e)
-    return output
+        with open("ERROR.txt", "a") as f:
+
+            f.write(str(e) + " " + tunnel.host + " " + comando + " " + "\n")
+
+
 
 
 def exact_Match(phrase, words):
@@ -65,7 +70,7 @@ def exact_Match(phrase, words):
 
 def run(ip):
     try:
-        with multiprocessing.Pool(processes=5) as pool:
+        with multiprocessing.Pool(processes=10) as pool:
             pool.map(main, ip)
 
     except KeyboardInterrupt:
@@ -78,6 +83,7 @@ def main(ip):
     out = []
 
     tunnel = conectar(ip)
+
     if tunnel:
         print("*" * 50)
         print("*** HC ***")
@@ -201,7 +207,7 @@ def main(ip):
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
-                                    if lista[-1] != "Idle":
+                                    if lista[-1] == "Idle":
                                         print("*** BGP ***")
                                         out.append("*** BGP ***")
                                         print(output)
@@ -210,10 +216,9 @@ def main(ip):
 
             except Exception as e:
                 print(e)
-                with open(ip + ".txt", "a") as f:
-                    f.write(str(e) + "\n")
+                with open("ERROR.txt", "a") as f:
+                    f.write(str(e) + " " + ip + " " + cmd + " " + "\n")
                 pass
-
 
     out.append("*" * 80)
     tunnel.disconnect()

@@ -106,8 +106,8 @@ def main(ip):
                             print(ip)
                             out.append("*** VRF ***")
                             for x in output.splitlines():
-                                output = x.split()
-                                if output[2] == "Down":
+                                lista = x.split()
+                                if lista[2] == "Down":
                                     print(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                                     out.append(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
                             print("\n")
@@ -115,8 +115,8 @@ def main(ip):
                     if "show license usage" in cmd:
                         if output:
                             for x in output.splitlines():
-                                output = x.split()
-                                if output[-1] != "-":
+                                lista = x.split()
+                                if lista[-1] != "-":
                                     print("*** LICENSE ***")
                                     out.append("*** LICENSE ***")
                                     print(f"License: {output[0]} State: {output[-1]}")
@@ -176,12 +176,12 @@ def main(ip):
                     if "show system resources" in cmd:
                         if output:
                             for x in output.splitlines():
-                                output = x.split()
-                                if float(output[-2].replace("%", "")) < 60.0:
+                                lista = x.split()
+                                if float(lista[-2].replace("%", "")) < 60.0:
                                     print("*** SYSTEM RESOURCES ***")
                                     out.append("*** SYSTEM RESOURCES ***")
-                                    print(" ".join(output[-2:]))
-                                    out.append(" ".join(output[-2:]))
+                                    print(" ".join(lista[-2:]))
+                                    out.append(" ".join(lista[-2:]))
                                     print("\n")
 
                     if "show fex" in cmd:
@@ -197,8 +197,8 @@ def main(ip):
                     if "show ip bgp summary vrf all" in cmd:
                         if output:
                             for x in output.splitlines():
-                                output = x.split()
-                                if output[-1] != "Idle":
+                                lista = x.split()
+                                if lista[-1] != "Idle":
                                     print("*** BGP ***")
                                     out.append("*** BGP ***")
                                     print(output)

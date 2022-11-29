@@ -196,7 +196,7 @@ def main(ip):
             except Exception as e:
                 print(e)
                 with open("ERROR.txt", "a") as f:
-                    f.write(ip + "# " + " " + output + " " + cmd + " " + "\n")
+                    f.write(ip + "# " + " " + cmd + " " + "\n")
 
         out.append("*" * 80)
         ssh.close()

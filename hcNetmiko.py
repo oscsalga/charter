@@ -15,7 +15,7 @@ port = 22
 username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-"""commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
+commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
             "show license usage | ex * | ex --- | ex Feat | ex Coun | sed '/^$/d'",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
             "show diagnostic result module all | inc '> F'",
@@ -24,10 +24,10 @@ date_time = datetime.datetime.now().strftime("%Y-%m-%d")
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
-            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]"""
+            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
 
 archivo = "salida.txt"
-commands = ["show license usage | ex * | ex --- | ex Feat | ex Cou |  sed '/^$/d'"]
+#commands = ["show license usage | ex * | ex --- | ex Feat | ex Cou |  sed '/^$/d'"]
 
 
 def conectar(ip):
@@ -46,7 +46,7 @@ def conectar(ip):
 def ejecutar_comando(tunnel, comando):
     output = ""
     try:
-        output = tunnel.send_command(comando, expect_string="#", max_loops=5000, delay_factor=5000, read_timeout=150)
+        output = tunnel.send_command(comando, strip_command=True, strip_prompt=True, max_loops=5000, delay_factor=5000, read_timeout=150)
         # output = tunnel.send_command(comando, expect_string="#", delay_factor=5)
 
     except Exception as e:
@@ -213,13 +213,14 @@ def main(ip):
                 with open(ip + ".txt", "a") as f:
                     f.write(str(e) + "\n")
                 pass
-        with open(ip + ".txt", "a") as f:
-            if out:
-                for x in out:
-                    f.write(x + "\n\n")
+
 
     out.append("*" * 80)
     tunnel.disconnect()
+    with open(ip + ".txt", "a") as f:
+        if out:
+            for x in out:
+                f.write(x + "\n\n")
 
 
 if __name__ == '__main__':

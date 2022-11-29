@@ -71,7 +71,7 @@ def main(ip):
                 time.sleep(2)
                 output = ''.join(outlines)
 
-                if "Cmd exec error" not in output:
+                if "Cmd exec error" not in output or "Syntaxis error" not in output:
                     if "ver" in cmd:
                         print("*** VERSION ***")
                         versiones = re.findall("\d.*", output)

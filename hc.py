@@ -182,14 +182,14 @@ def main(ip):
                                         print("\n")
 
                         if "show fabricpath isis interface br | in Up | ex Interface" in cmd:
-                                lista = output.splitlines()
-                                if lista:
-                                    if "Up/Ready" not in lista:
-                                        print("*** FABRICPATH TOPOLOGY ***")
-                                        out.append("*** FABRICPATH TOPOLOGY ***")
-                                        print(output)
-                                        out.append(output)
-                                        print("\n")
+                            lista = output.splitlines()
+                            if lista:
+                                if "Up/Ready" not in lista:
+                                    print("*** FABRICPATH TOPOLOGY ***")
+                                    out.append("*** FABRICPATH TOPOLOGY ***")
+                                    print(output)
+                                    out.append(output)
+                                    print("\n")
 
 
 

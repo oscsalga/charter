@@ -15,7 +15,7 @@ port = 22
 username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
+"""commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
             "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
             "show diagnostic result module all | inc '> F'",
@@ -24,9 +24,10 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
-            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
+            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]"""
 
 archivo = "salida.txt"
+commands = ["show license usage | ex * | ex --- | ex Feat | ex Cou"]
 
 
 def conectar(ip):

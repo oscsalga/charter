@@ -16,7 +16,7 @@ username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 """commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
-            "show license usage | ex * | ex --- | ex Feat | ex Coun",
+            "show license usage | ex * | ex --- | ex Feat | ex Coun | sed '/^$/d'",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
             "show diagnostic result module all | inc '> F'",
             "show system internal mts buffer summa | ex node |  cut -f 3-0",

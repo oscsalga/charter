@@ -14,7 +14,7 @@ port = 22
 username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
+commands = ["show vedasdasr | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
             "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
@@ -27,40 +27,6 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
 archivo = "salida.txt"
 
 
-def find_values(id, json_repr):
-    results = []
-
-    def _decode_dict(a_dict):
-        try:
-            results.append(a_dict[id])
-        except KeyError:
-            pass
-        return a_dict
-
-    json.loads(json_repr, object_hook=_decode_dict)  # Return value ignored.
-    return results
-
-
-
-def line_prepender(filename, line):
-    with open(filename, 'r+') as f:
-        content = f.read()
-        f.seek(0, 0)
-        f.write(line.rstrip("\r\n") + '\n' + content + "\n")
-
-
-def exact_Match(phrase, words):
-    b = r'(\s|^|$)'
-    for word in words:
-        if re.match(b + word + b, phrase, flags=re.IGNORECASE) == None:
-            continue
-        else:
-            return True
-
-
-def returnNotMatches(a, b):
-    return [x for x in b if x not in a]
-
 
 def run(ip):
     try:
@@ -70,15 +36,15 @@ def run(ip):
     except KeyboardInterrupt:
         sys.exit(1)
     except Exception as e:
-        pass
+        print(e)
 
 
 def main(ip):
     out = []
-    resp = ""
     ssh = None
     tunnel = False
     try:
+
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, port, username, password, timeout=90,
@@ -98,137 +64,147 @@ def main(ip):
         print("\n")
         print('Hostname: ' + ip)
         for cmd in commands:
-
             try:
                 stdin, stdout, stderr = ssh.exec_command(cmd, timeout=90)
+
                 outlines = stdout.readlines()
                 time.sleep(2)
-                resp = ''.join(outlines)
+                output = ''.join(outlines)
 
-                if "Cmd exec error" not in resp:
+                if "Cmd exec error" not in output:
                     if "ver" in cmd:
                         print("*** VERSION ***")
-                        versiones = re.findall("\d.*", resp)
+                        versiones = re.findall("\d.*", output)
                         print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                         out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                         out.append("*" * 50)
                         print("*" * 50)
                         print("\n")
 
-                    if "vrf" in cmd:
-                        if resp:
+                    if "show vrf" in cmd:
+                        if output:
                             print("*** VRF ***")
+                            print(ip)
                             out.append("*** VRF ***")
-                            for x in resp.splitlines():
-                                output = x.split()
-                                if output[2] == "Down":
-                                    print(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
-                                    out.append(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    if lista[2] == "Down":
+                                        print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
+                                        out.append(
+                                            f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                             print("\n")
 
                     if "show license usage" in cmd:
-                        if resp:
-
-                            for x in resp.splitlines():
-                                output = x.split()
-                                if output[-1] != "-":
-                                    print("*** LICENSE ***")
-                                    out.append("*** LICENSE ***")
-                                    print(f"License: {output[0]} State: {output[-1]}")
-                                    out.append(f"License: {output[0]} State: {output[-1]}")
-                                    print("\n")
+                        if output:
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    if lista[-1] != "-":
+                                        print("*** LICENSE ***")
+                                        out.append("*** LICENSE ***")
+                                        print(f"License: {lista[0]} State: {lista[-1]}")
+                                        out.append(f"License: {lista[0]} State: {lista[-1]}")
+                                        print("\n")
 
                     if "show module" in cmd:
-                        if resp:
+                        if output:
                             print("*** MODULE ***")
                             out.append("*** MODULE ***")
-                            for x in resp.splitlines():
+                            for x in output.splitlines():
                                 if x:
                                     print(x)
                                     out.append(x)
                         print("\n")
 
                     if "diagnostic" in cmd:
-                        if resp:
+                        if output:
                             print("*** DIAGNOSTIC ***")
-                            print(resp)
+                            print(output)
                             out.append("*** DIAGNOSTIC ***")
-                            out.append(resp)
+                            out.append(output)
                             print("\n")
                     if "show system internal mts" in cmd:
-                        for x in resp.split():
-                            if int(x) > 99:
-                                print("*** SYSTEM INTERNAL MTS ***")
-                                out.append("*** SYSTEM INTERNAL MTS ***")
-                                print(x)
-                                out.append(x)
-                                print("\n")
+                        if output:
+                            for x in output.split():
+                                if int(x) > 99:
+                                    print("*** SYSTEM INTERNAL MTS ***")
+                                    out.append("*** SYSTEM INTERNAL MTS ***")
+                                    print(x)
+                                    out.append(x)
+                                    print("\n")
                     if "show int desc" in cmd:
-                        if resp:
+                        if output:
                             print("*** SHOW INT [BRIEF-DESC] ***")
                             out.append("*** SHOW INT [BRIEF-DESC] ***")
-                            print(resp)
-                            out.append(resp)
+                            print(output)
+                            out.append(output)
                             print("\n")
 
                     if "show port-channel summary" in cmd:
-                        if resp:
+                        if output:
                             print("*** PORT-CHANNEL SUMMARY ***")
-                            print(resp)
+                            print(output)
                             out.append("*** PORT-CHANNEL SUMMARY ***")
-                            out.append(resp)
+                            out.append(output)
                             print("\n")
 
                     if "show vpc br" in cmd:
-                        if resp:
+                        if output:
                             print("*** VPC BRIEF ***")
                             out.append("*** VPC BRIEF ***")
-                            print(resp)
-                            out.append(resp)
+                            print(output)
+                            out.append(output)
                             print("\n")
 
                     if "show system resources" in cmd:
-                        for x in resp.splitlines():
-                            output = x.split()
-                            if float(output[-2].replace("%", "")) < 60.0:
-                                print("*** SYSTEM RESOURCES ***")
-                                out.append("*** SYSTEM RESOURCES ***")
-                                print(" ".join(output[-2:]))
-                                out.append(" ".join(output[-2:]))
-                                print("\n")
+                        if output:
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    if float(lista[-2].replace("%", "")) < 60.0:
+                                        print("*** SYSTEM RESOURCES ***")
+                                        out.append("*** SYSTEM RESOURCES ***")
+                                        print(" ".join(lista[-2:]))
+                                        out.append(" ".join(lista[-2:]))
+                                        print("\n")
 
                     if "show fex" in cmd:
-                        for x in resp.splitlines():
-                            if x:
-                                print("*** FEX ***")
-                                out.append("*** FEX ***")
-                                print(x)
-                                out.append(x)
-                                print("\n")
+                        if output:
+                            for x in output.splitlines():
+                                if x:
+                                    print("*** FEX ***")
+                                    out.append("*** FEX ***")
+                                    print(x)
+                                    out.append(x)
+                                    print("\n")
 
                     if "show ip bgp summary vrf all" in cmd:
-                        for x in resp.splitlines():
-                            output = x.split()
-                            if output[-1] != "Idle":
-                                print("*** BGP ***")
-                                out.append("*** BGP ***")
-                                print(output)
-                                out.append(output)
-                                print("\n")
+                        if output:
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    if lista[-1] == "Idle":
+                                        print("*** BGP ***")
+                                        out.append("*** BGP ***")
+                                        print(output)
+                                        out.append(output)
+                                        print("\n")
+                else:
+                    with open("ERROR.txt", "a") as f:
+                        f.write(ip + " " + " " + output + " " + cmd + " " + "\n")
             except Exception as e:
                 print(e)
-                with open(ip + ".txt", "a") as f:
-                    f.write(str(e) + "\n")
-                continue
+                with open("ERROR.txt", "a") as f:
+                    f.write(str(e) + " " + ip + " " + cmd + " " + "\n")
+                pass
+
+        out.append("*" * 80)
+        ssh.close()
         with open(ip + ".txt", "a") as f:
             if out:
                 for x in out:
                     f.write(x + "\n\n")
-
-    out.append("*" * 80)
-    ssh.close()
-
-
 
 if __name__ == '__main__':
     run(ips)

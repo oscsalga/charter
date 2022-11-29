@@ -14,7 +14,7 @@ port = 22
 username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-commands = ["show vedasdasr | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
+commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
             "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
@@ -192,12 +192,11 @@ def main(ip):
                                         print("\n")
                 else:
                     with open("ERROR.txt", "a") as f:
-                        f.write(ip + " " + " " + output + " " + cmd + " " + "\n")
+                        f.write(ip + "# " + " " + output + " " + cmd + " " + "\n")
             except Exception as e:
                 print(e)
                 with open("ERROR.txt", "a") as f:
-                    f.write(str(e) + " " + ip + " " + cmd + " " + "\n")
-                pass
+                    f.write(ip + "# " + " " + output + " " + cmd + " " + "\n")
 
         out.append("*" * 80)
         ssh.close()

@@ -90,7 +90,6 @@ def main(ip):
                 output = ejecutar_comando(tunnel, cmd)
 
                 if "command at" not in output:
-
                     if "ver" in cmd:
                         print("*** VERSION ***")
                         versiones = re.findall("\d.*", output)
@@ -101,7 +100,7 @@ def main(ip):
                         print("\n")
 
                     if "show vrf" in cmd:
-                        if len(output) > 0:
+                        if output:
                             print("*** VRF ***")
                             print(ip)
                             out.append("*** VRF ***")
@@ -141,13 +140,14 @@ def main(ip):
                             out.append(output)
                             print("\n")
                     if "show system internal mts" in cmd:
-                        for x in output.split():
-                            if int(x) > 99:
-                                print("*** SYSTEM INTERNAL MTS ***")
-                                out.append("*** SYSTEM INTERNAL MTS ***")
-                                print(x)
-                                out.append(x)
-                                print("\n")
+                        if output:
+                            for x in output.split():
+                                if int(x) > 99:
+                                    print("*** SYSTEM INTERNAL MTS ***")
+                                    out.append("*** SYSTEM INTERNAL MTS ***")
+                                    print(x)
+                                    out.append(x)
+                                    print("\n")
                     if "show int desc" in cmd:
                         if output:
                             print("*** SHOW INT [BRIEF-DESC] ***")
@@ -173,14 +173,15 @@ def main(ip):
                             print("\n")
 
                     if "show system resources" in cmd:
-                        for x in output.splitlines():
-                            output = x.split()
-                            if float(output[-2].replace("%", "")) < 60.0:
-                                print("*** SYSTEM RESOURCES ***")
-                                out.append("*** SYSTEM RESOURCES ***")
-                                print(" ".join(output[-2:]))
-                                out.append(" ".join(output[-2:]))
-                                print("\n")
+                        if output:
+                            for x in output.splitlines():
+                                output = x.split()
+                                if float(output[-2].replace("%", "")) < 60.0:
+                                    print("*** SYSTEM RESOURCES ***")
+                                    out.append("*** SYSTEM RESOURCES ***")
+                                    print(" ".join(output[-2:]))
+                                    out.append(" ".join(output[-2:]))
+                                    print("\n")
 
                     if "show fex" in cmd:
                         if output:

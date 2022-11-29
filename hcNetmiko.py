@@ -101,7 +101,7 @@ def main(ip):
                         print("\n")
 
                     if "show vrf" in cmd:
-                        if output:
+                        if len(output) > 0:
                             print("*** VRF ***")
                             print(ip)
                             out.append("*** VRF ***")

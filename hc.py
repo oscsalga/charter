@@ -189,8 +189,8 @@ def main(ip):
                                         if "Up/Ready" not in up:
                                             print("*** FABRICPATH TOPOLOGY ***")
                                             out.append("*** FABRICPATH TOPOLOGY ***")
-                                            print(output)
-                                            out.append(output)
+                                            print(lista)
+                                            out.append(lista)
                                             print("\n")
 
 

@@ -27,10 +27,9 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
 archivo = "salida.txt"
 
 
-
 def run(ip):
     try:
-        with multiprocessing.Pool(processes=5) as pool:
+        with multiprocessing.Pool(processes=20) as pool:
             pool.map(main, ip)
 
     except KeyboardInterrupt:
@@ -71,7 +70,7 @@ def main(ip):
                 time.sleep(2)
                 output = ''.join(outlines)
 
-                if "Cmd exec error" not in output or "Syntaxis error" not in output:
+                if "error" not in output:
                     if "ver" in cmd:
                         print("*** VERSION ***")
                         versiones = re.findall("\d.*", output)
@@ -190,6 +189,12 @@ def main(ip):
                                         print(output)
                                         out.append(output)
                                         print("\n")
+
+
+
+
+
+
                 else:
                     with open("ERROR.txt", "a") as f:
                         f.write(ip + "# " + " " + output + " " + cmd + " " + "\n")
@@ -200,10 +205,11 @@ def main(ip):
 
         out.append("*" * 80)
         ssh.close()
-        with open(ip + ".txt", "a") as f:
-            if out:
-                for x in out:
-                    f.write(x + "\n\n")
+        if len(out) > 4:
+            with open(ip + ".txt", "a") as f:
+                if out:
+                    for x in out:
+                        f.write(x + "\n\n")
 
 if __name__ == '__main__':
     run(ips)

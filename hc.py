@@ -21,7 +21,8 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
-            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
+            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*',"
+            "show fabricpath isis interface br | in Up | ex Interface"]
 
 
 archivo = "salida.txt"
@@ -71,17 +72,17 @@ def main(ip):
                 output = ''.join(outlines)
 
                 if "error" not in output:
-                    if "ver" in cmd:
-                        print("*** VERSION ***")
-                        versiones = re.findall("\d.*", output)
-                        print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
-                        out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
-                        out.append("*" * 50)
-                        print("*" * 50)
-                        print("\n")
+                    if output:
+                        if "show ver" in cmd:
+                            print("*** VERSION ***")
+                            versiones = re.findall("\d.*", output)
+                            print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                            out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                            out.append("*" * 50)
+                            print("*" * 50)
+                            print("\n")
 
-                    if "show vrf" in cmd:
-                        if output:
+                        if "show vrf" in cmd:
                             print("*** VRF ***")
                             print(ip)
                             out.append("*** VRF ***")
@@ -92,10 +93,9 @@ def main(ip):
                                         print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                         out.append(
                                             f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
-                            print("\n")
+                                print("\n")
 
-                    if "show license usage" in cmd:
-                        if output:
+                        if "show license usage" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
@@ -106,25 +106,22 @@ def main(ip):
                                         out.append(f"License: {lista[0]} State: {lista[-1]}")
                                         print("\n")
 
-                    if "show module" in cmd:
-                        if output:
+                        if "show module" in cmd:
                             print("*** MODULE ***")
                             out.append("*** MODULE ***")
                             for x in output.splitlines():
                                 if x:
                                     print(x)
                                     out.append(x)
-                        print("\n")
+                            print("\n")
 
-                    if "diagnostic" in cmd:
-                        if output:
+                        if "diagnostic" in cmd:
                             print("*** DIAGNOSTIC ***")
                             print(output)
                             out.append("*** DIAGNOSTIC ***")
                             out.append(output)
                             print("\n")
-                    if "show system internal mts" in cmd:
-                        if output:
+                        if "show system internal mts" in cmd:
                             for x in output.split():
                                 if int(x) > 99:
                                     print("*** SYSTEM INTERNAL MTS ***")
@@ -132,32 +129,28 @@ def main(ip):
                                     print(x)
                                     out.append(x)
                                     print("\n")
-                    if "show int desc" in cmd:
-                        if output:
+                        if "show int desc" in cmd:
                             print("*** SHOW INT [BRIEF-DESC] ***")
                             out.append("*** SHOW INT [BRIEF-DESC] ***")
                             print(output)
                             out.append(output)
                             print("\n")
 
-                    if "show port-channel summary" in cmd:
-                        if output:
+                        if "show port-channel summary" in cmd:
                             print("*** PORT-CHANNEL SUMMARY ***")
                             print(output)
                             out.append("*** PORT-CHANNEL SUMMARY ***")
                             out.append(output)
                             print("\n")
 
-                    if "show vpc br" in cmd:
-                        if output:
+                        if "show vpc br" in cmd:
                             print("*** VPC BRIEF ***")
                             out.append("*** VPC BRIEF ***")
                             print(output)
                             out.append(output)
                             print("\n")
 
-                    if "show system resources" in cmd:
-                        if output:
+                        if "show system resources" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
@@ -168,8 +161,7 @@ def main(ip):
                                         out.append(" ".join(lista[-2:]))
                                         print("\n")
 
-                    if "show fex" in cmd:
-                        if output:
+                        if "show fex" in cmd:
                             for x in output.splitlines():
                                 if x:
                                     print("*** FEX ***")
@@ -178,8 +170,7 @@ def main(ip):
                                     out.append(x)
                                     print("\n")
 
-                    if "show ip bgp summary vrf all" in cmd:
-                        if output:
+                        if "show ip bgp summary vrf all" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
@@ -190,14 +181,16 @@ def main(ip):
                                         out.append(output)
                                         print("\n")
 
-
-
-
+                        if "show fabricpath isis interface br | in Up | ex Interface" in cmd:
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    print(lista)
 
 
                 else:
                     with open("ERROR.txt", "a") as f:
-                        f.write(ip + "# " + " " + output + " " + cmd + " " + "\n")
+                        f.write(ip + "# " + " " + cmd + " " + "\n")
             except Exception as e:
                 print(e)
                 with open("ERROR.txt", "a") as f:
@@ -210,6 +203,7 @@ def main(ip):
                 if out:
                     for x in out:
                         f.write(x + "\n\n")
+
 
 if __name__ == '__main__':
     run(ips)

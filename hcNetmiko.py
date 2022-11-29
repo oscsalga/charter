@@ -45,7 +45,7 @@ def conectar(ip):
 def ejecutar_comando(tunnel, comando):
     output = ""
     try:
-        output = tunnel.send_command(comando, expect_string="#", max_loops=5000, delay_factor=5000)
+        output = tunnel.send_command(comando, expect_string="#", max_loops=5000, delay_factor=5000, read_timeout=100)
         #output = tunnel.send_command(comando, expect_string="#", delay_factor=5)
 
     except Exception as e:

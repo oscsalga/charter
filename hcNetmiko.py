@@ -7,24 +7,24 @@ import sys
 import json
 import re
 
-
 with open('equipos') as f:
     ips = f.read().splitlines()
+
 
 port = 22
 username = 'p3121751'
 password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-commands = ["show vedasdasr | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
+commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up",
+            "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
-            "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
+            "show diagnostic result module all | inc '> F'",
+            "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
             "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]
-
-
 
 archivo = "salida.txt"
 
@@ -32,26 +32,25 @@ archivo = "salida.txt"
 def conectar(ip):
     try:
         tunnel = ConnectHandler(device_type="cisco_nxos", ip=ip, password=password,
-                                     port=port, username=username, banner_timeout=200000,
-                                     timeout=2000)
+                                port=port, username=username, banner_timeout=200000,
+                                timeout=2000)
         if tunnel.is_alive():
             return tunnel
 
     except Exception as e:
-        #print(str(e))
+        # print(str(e))
         pass
 
 
 def ejecutar_comando(tunnel, comando):
     output = ""
     try:
-        output = tunnel.send_command(comando, expect_string="#", max_loops=5000, delay_factor=5000, read_timeout=100)
-        #output = tunnel.send_command(comando, expect_string="#", delay_factor=5)
+        output = tunnel.send_command(comando, expect_string="#", max_loops=5000, delay_factor=5000, read_timeout=150)
+        # output = tunnel.send_command(comando, expect_string="#", delay_factor=5)
 
     except Exception as e:
         print(e)
     return output
-
 
 
 def exact_Match(phrase, words):
@@ -61,7 +60,6 @@ def exact_Match(phrase, words):
             continue
         else:
             return True
-
 
 
 def run(ip):
@@ -79,7 +77,6 @@ def main(ip):
     out = []
 
     tunnel = conectar(ip)
-
 
     if tunnel:
         print("*" * 50)
@@ -103,9 +100,10 @@ def main(ip):
                         print("*" * 50)
                         print("\n")
 
-                    if "vrf" in cmd:
+                    if "show vrf" in cmd:
                         if output:
                             print("*** VRF ***")
+                            print(ip)
                             out.append("*** VRF ***")
                             for x in output.splitlines():
                                 output = x.split()
@@ -222,8 +220,6 @@ def main(ip):
 if __name__ == '__main__':
     run(ips)
 
-
-
 #  show vrf | json
 #  show license usage | json
 #  show ver | in  "kickstart:|system:"     \d.*
@@ -237,10 +233,6 @@ if __name__ == '__main__':
 #  FALTA show ip bgp summary vrf all | inc [0-9,1-3].[0-9,1-3].[0-9,1-3]
 #  FALTA show ipv6 bgp summary vrf all | inc [a-f0-9,1-4]:[a-f0-9,1-4]
 #  show fex | json
-
-
-
-
 
 
 # show env todo lo de abajo
@@ -340,8 +332,6 @@ data = """{
     }
   }
 }"""
-
-
 
 """print(find_values('fanstatus', data))
 print(find_values('ps_status', data))

@@ -27,7 +27,7 @@ date_time = datetime.datetime.now().strftime("%Y-%m-%d")
             "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'"]"""
 
 archivo = "salida.txt"
-commands = ["show license usage | ex * | ex --- | ex Feat | ex Cou"]
+commands = ["show license usage | ex * | ex --- | ex Feat | ex Cou |  sed '/^$/d'"]
 
 
 def conectar(ip):
@@ -39,8 +39,8 @@ def conectar(ip):
             return tunnel
 
     except Exception as e:
-        # print(str(e))
-        pass
+        print(str(e))
+
 
 
 def ejecutar_comando(tunnel, comando):
@@ -78,7 +78,6 @@ def main(ip):
     out = []
 
     tunnel = conectar(ip)
-
     if tunnel:
         print("*" * 50)
         print("*** HC ***")
@@ -109,8 +108,8 @@ def main(ip):
                                 lista = x.split()
                                 if lista:
                                     if lista[2] == "Down":
-                                        print(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
-                                        out.append(f"VRF: {output[0]} State: {output[2]} Reason: {' '.join(output[3:])}")
+                                        print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
+                                        out.append(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                             print("\n")
 
                     if "show license usage" in cmd:
@@ -121,8 +120,8 @@ def main(ip):
                                     if lista[-1] != "-":
                                         print("*** LICENSE ***")
                                         out.append("*** LICENSE ***")
-                                        print(f"License: {output[0]} State: {output[-1]}")
-                                        out.append(f"License: {output[0]} State: {output[-1]}")
+                                        print(f"License: {lista[0]} State: {lista[-1]}")
+                                        out.append(f"License: {lista[0]} State: {lista[-1]}")
                                         print("\n")
 
                     if "show module" in cmd:

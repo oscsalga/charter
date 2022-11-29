@@ -185,13 +185,12 @@ def main(ip):
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
-                                    for up in lista:
-                                        if "Up/Ready" not in up:
-                                            print("*** FABRICPATH TOPOLOGY ***")
-                                            out.append("*** FABRICPATH TOPOLOGY ***")
-                                            print(lista)
-                                            out.append(lista)
-                                            print("\n")
+                                    if "Up/Ready" not in lista:
+                                        print("*** FABRICPATH TOPOLOGY ***")
+                                        out.append("*** FABRICPATH TOPOLOGY ***")
+                                        print(output)
+                                        out.append(output)
+                                        print("\n")
 
 
 

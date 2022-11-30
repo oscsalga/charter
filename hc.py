@@ -11,8 +11,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'admin'
-password = 'cisco!123'
+username = 'P3121751'
+password = 'Ximena12.'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
@@ -178,7 +178,7 @@ def main(ip):
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
-                                    if lista[-1] == "Idle":
+                                    if lista[-1] != "Idle":
                                         print("*** BGP ***")
                                         out.append("*** BGP ***")
                                         print(output)
@@ -188,12 +188,13 @@ def main(ip):
                         if "show fabricpath isis interface br | in Up | ex Interface" in cmd:
                             lista = output.splitlines()
                             if lista:
-                                if "Up/Ready" not in lista:
+                                print(lista)
+                                """if "Up/Ready" not in lista:
                                     print("*** FABRICPATH TOPOLOGY ***")
                                     out.append("*** FABRICPATH TOPOLOGY ***")
                                     print(output)
                                     out.append(output)
-                                    print("\n")
+                                    print("\n")"""
 
 
 

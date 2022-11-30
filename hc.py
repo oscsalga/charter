@@ -33,8 +33,7 @@ commands = ["show ver | in  'kickstart:|system:'",
 archivo = "salida.txt"
 path = r"output.xlsx"  # NOMBRE DEL OUTPUT FILE
 writer = pd.ExcelWriter(path, engine='xlsxwriter')
-df = {'Command': commands}
-df = pd.DataFrame(df, columns=['Command', 'Value'])
+
 
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
@@ -60,7 +59,8 @@ def main(ip):
     out = []
     ssh = None
     tunnel = False
-
+    df = {'Command': commands}
+    df = pd.DataFrame(df, columns=['Command', 'Value'])
 
     try:
 
@@ -265,10 +265,7 @@ def main(ip):
                                      {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
 
         auto_width_columns(df, worksheet, formato)
-    writer.save()
-
-
-
+        writer.save()
 
 
 if __name__ == '__main__':

@@ -11,8 +11,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'cisco!123'
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
@@ -21,12 +21,12 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
-            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*',"
+            "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'",
             "show fabricpath isis interface br | in Up | ex Interface"]
 
 
 archivo = "salida.txt"
-
+#commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
 def run(ip):
     try:
@@ -83,28 +83,34 @@ def main(ip):
                             print("\n")
 
                         if "show vrf" in cmd:
-                            print("*** VRF ***")
-                            print(ip)
-                            out.append("*** VRF ***")
-                            for x in output.splitlines():
-                                lista = x.split()
-                                if lista:
-                                    if lista[2] == "Down":
-                                        print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
-                                        out.append(
-                                            f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
+                            if output.splitlines():
+                                print("*** VRF ***")
+                                out.append("*** VRF ***")
+
+                                for x in output.splitlines():
+                                    lista = x.split()
+                                    if lista:
+
+                                        if lista[2] == "Down":
+
+                                            print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
+                                            out.append(
+                                                f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                 print("\n")
 
                         if "show license usage" in cmd:
+                            flag = True
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
                                     if lista[-1] != "-":
-                                        print("*** LICENSE ***")
-                                        out.append("*** LICENSE ***")
+                                        if flag:
+                                            print("*** LICENSE ***")
+                                            out.append("*** LICENSE ***")
                                         print(f"License: {lista[0]} State: {lista[-1]}")
                                         out.append(f"License: {lista[0]} State: {lista[-1]}")
-                                        print("\n")
+                                        flag = False
+                            print("\n")
 
                         if "show module" in cmd:
                             print("*** MODULE ***")
@@ -162,13 +168,11 @@ def main(ip):
                                         print("\n")
 
                         if "show fex" in cmd:
-                            for x in output.splitlines():
-                                if x:
-                                    print("*** FEX ***")
-                                    out.append("*** FEX ***")
-                                    print(x)
-                                    out.append(x)
-                                    print("\n")
+                            print("*** FEX ***")
+                            out.append("*** FEX ***")
+                            print(" ".join(output.splitlines()))
+                            out.append(" ".join(output.splitlines()))
+                            print("\n")
 
                         if "show ip bgp summary vrf all" in cmd:
                             for x in output.splitlines():
@@ -202,12 +206,14 @@ def main(ip):
                     f.write(ip + "# " + " " + cmd + " " + "\n")
 
         out.append("*" * 80)
+
         ssh.close()
         if len(out) > 4:
             with open(ip + ".txt", "a") as f:
                 if out:
                     for x in out:
-                        f.write(x + "\n\n")
+                        f.write(x + "\n")
+                f.write("\n")
 
 
 if __name__ == '__main__':

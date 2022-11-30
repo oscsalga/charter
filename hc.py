@@ -31,8 +31,6 @@ commands = ["show ver | in  'kickstart:|system:'",
 
 
 archivo = "salida.txt"
-path = r"output.xlsx"  # NOMBRE DEL OUTPUT FILE
-writer = pd.ExcelWriter(path, engine='xlsxwriter')
 
 
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
@@ -77,6 +75,9 @@ def main(ip):
             f.write(ip + ' No se conecta\n\n')
 
     if tunnel:
+        
+        path = ip + ".xlsx"  # NOMBRE DEL OUTPUT FILE
+        writer = pd.ExcelWriter(path, engine='xlsxwriter')
         print("*" * 50)
         print("*** HC ***")
         print("*" * 50)

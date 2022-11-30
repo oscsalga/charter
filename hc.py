@@ -12,8 +12,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'CXlabs.123'
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'",
@@ -32,7 +32,9 @@ commands = ["show ver | in  'kickstart:|system:'",
 
 archivo = "salida.txt"
 path = r"output.xlsx"  # NOMBRE DEL OUTPUT FILE
-
+writer = pd.ExcelWriter(path, engine='xlsxwriter')
+df = {'Command': commands}
+df = pd.DataFrame(df, columns=['Command', 'Value'])
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
 def run(ip):
@@ -57,9 +59,7 @@ def main(ip):
     out = []
     ssh = None
     tunnel = False
-    writer = pd.ExcelWriter(path, engine='xlsxwriter')
-    df = {'Command': commands}
-    df = pd.DataFrame(df, columns=['Command', 'Value'])
+
 
 
 

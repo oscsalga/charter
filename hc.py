@@ -177,24 +177,22 @@ def main(ip):
                         if "show ip bgp summary vrf all" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
-                                if lista:
-                                    if lista[-1] != "Idle":
-                                        print("*** BGP ***")
-                                        out.append("*** BGP ***")
-                                        print(output)
-                                        out.append(output)
-                                        print("\n")
+                                if "Idle" in lista:
+                                    print("*** BGP ***")
+                                    out.append("*** BGP ***")
+                                    print(" ".join(lista))
+                                    out.append(" ".join(lista))
+                            print("\n")
 
                         if "show fabricpath isis interface br | in Up | ex Interface" in cmd:
-                            lista = output.splitlines()
-                            if lista:
-                                print(lista)
-                                """if "Up/Ready" not in lista:
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if "Up/Ready" not in lista:
                                     print("*** FABRICPATH TOPOLOGY ***")
                                     out.append("*** FABRICPATH TOPOLOGY ***")
-                                    print(output)
-                                    out.append(output)
-                                    print("\n")"""
+                                    print(" ".join(lista))
+                                    out.append(" ".join(lista))
+                            print("\n")
 
 
 

@@ -32,6 +32,9 @@ commands = ["show ver | in  'kickstart:|system:'",
 
 archivo = "salida.txt"
 path = r"output.xlsx"  # NOMBRE DEL OUTPUT FILE
+writer = pd.ExcelWriter(path, engine='xlsxwriter')
+df = {'Command': commands}
+df = pd.DataFrame(df, columns=['Command', 'Value'])
 
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
@@ -57,9 +60,7 @@ def main(ip):
     out = []
     ssh = None
     tunnel = False
-    writer = pd.ExcelWriter(path, engine='xlsxwriter')
-    df = {'Command': commands}
-    df = pd.DataFrame(df, columns=['Command', 'Value'])
+
 
     try:
 
@@ -255,17 +256,17 @@ def main(ip):
                         f.write(x + "\n")
                 f.write("\n")
 
-    df.to_excel(writer, sheet_name=ip, index=False)
-    workbook = writer.book
-    worksheet = writer.sheets[ip]
-    formato = workbook.add_format({'align': 'left', 'valign': 'vcenter'})
-    titulo = workbook.add_format({'bg_color': '19b2e7'})
-    worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
-                                 {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
+        df.to_excel(writer, sheet_name=ip, index=False)
+        workbook = writer.book
+        worksheet = writer.sheets[ip]
+        formato = workbook.add_format({'align': 'left', 'valign': 'vcenter'})
+        titulo = workbook.add_format({'bg_color': '19b2e7'})
+        worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
+                                     {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
 
-    auto_width_columns(df, worksheet, formato)
+        auto_width_columns(df, worksheet, formato)
     writer.save()
-    writer.close()
+
 
 
 

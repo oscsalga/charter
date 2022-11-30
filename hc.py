@@ -5,18 +5,23 @@ import multiprocessing
 import sys
 import json
 import re
+import pandas as pd
 
 
 with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'P3121751'
+username = 'p3121751'
 password = 'Ximena12.'
+
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
-commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", "show license usage | ex * | ex --- | ex Feat | ex Coun",
+commands = ["show ver | in  'kickstart:|system:'",
+            "show vrf | ex VRF | ex Up",
+            "show license usage | ex * | ex --- | ex Feat | ex Coun",
             "show module | ex Sw | ex MAC | ex -- | ex to | ex Ports | ex ok | ex active | ex standby | sed '/^$/d'",
-            "show diagnostic result module all | inc '> F'", "show system internal mts buffer summa | ex node |  cut -f 3-0",
+            "show diagnostic result module all | inc '> F'",
+            "show system internal mts buffer summa | ex node |  cut -f 3-0",
             "show int desc | ex -- |  egrep 'Eth|Po' | ex Port | cut -d ' ' -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down",
             "show port-channel summary | in SD | cut -d ' ' -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in down | ex watch",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
@@ -26,6 +31,8 @@ commands = ["show ver | in  'kickstart:|system:'", "show vrf | ex VRF | ex Up", 
 
 
 archivo = "salida.txt"
+path = r"output.xlsx"  # NOMBRE DEL OUTPUT FILE
+
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
 def run(ip):
@@ -39,10 +46,23 @@ def run(ip):
         print(e)
 
 
+def auto_width_columns(df, worksheet, formato):
+    for s, col in enumerate(df.columns):
+        column_len = max(df[col].astype(str).str.len().max(), len(col))
+        worksheet.set_column(s, s, column_len - 10, formato)
+
+
 def main(ip):
+
     out = []
     ssh = None
     tunnel = False
+    writer = pd.ExcelWriter(path, engine='xlsxwriter')
+    df = {'Command': commands}
+    df = pd.DataFrame(df, columns=['Command', 'Value'])
+
+
+
     try:
 
         ssh = paramiko.SSHClient()
@@ -80,7 +100,71 @@ def main(ip):
                             out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                             out.append("*" * 50)
                             print("*" * 50)
+                            df.at[0, 'Value'] = f"System {versiones[1]} Kickstart: {versiones[0]}"
                             print("\n")
+
+
+                        if "show license usage" in cmd:
+                            cell = []
+                            flag = True
+                            for x in output.splitlines():
+                                lista = x.split()
+                                if lista:
+                                    if lista[-1] != "-":
+                                        if flag:
+                                            print("*** LICENSE ***")
+                                            out.append("*** LICENSE ***")
+                                        print(f"License: {lista[0]} State: {lista[-1]}")
+                                        out.append(f"License: {lista[0]} State: {lista[-1]}")
+                                        cell.append(f"License: {lista[0]} State: {lista[-1]}")
+                                        flag = False
+                            df.at[1, 'Value'] = '\n'.join(cell)
+                            print("\n")
+
+                        if "show module" in cmd:
+                            cell = []
+                            print("*** MODULE ***")
+                            out.append("*** MODULE ***")
+                            for x in output.splitlines():
+                                if x:
+                                    print(x)
+                                    out.append(x)
+                                    cell.append(x)
+                            df.at[2, 'Value'] = '\n'.join(cell)
+                            print("\n")
+
+                        if "diagnostic" in cmd:
+                            cell = []
+                            print("*** DIAGNOSTIC ***")
+                            print(output)
+                            out.append("*** DIAGNOSTIC ***")
+                            out.append(output)
+                            cell.append(output)
+                            df.at[3, 'Value'] = '\n'.join(cell)
+                            print("\n")
+
+                        if "show system internal mts" in cmd:
+                            for x in output.split():
+                                if int(x) > 99:
+                                    print("*** SYSTEM INTERNAL MTS ***")
+                                    out.append("*** SYSTEM INTERNAL MTS ***")
+                                    print(x)
+                                    out.append(x)
+                                    df.at[5, 'Value'] = x
+                                    print("\n")
+
+                        if "show int desc" in cmd:
+                            cell = []
+                            print("*** SHOW INT [BRIEF-DESC] ***")
+                            out.append("*** SHOW INT [BRIEF-DESC] ***")
+                            print(output)
+                            out.append(output)
+                            for x in output.splitlines():
+                                lista = x.split()
+                                cell.append(lista[0])
+                            df.at[6, 'Value'] = "\n".join(cell)
+                            print("\n")
+
 
                         if "show vrf" in cmd:
                             if output.splitlines():
@@ -98,49 +182,9 @@ def main(ip):
                                                 f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                 print("\n")
 
-                        if "show license usage" in cmd:
-                            flag = True
-                            for x in output.splitlines():
-                                lista = x.split()
-                                if lista:
-                                    if lista[-1] != "-":
-                                        if flag:
-                                            print("*** LICENSE ***")
-                                            out.append("*** LICENSE ***")
-                                        print(f"License: {lista[0]} State: {lista[-1]}")
-                                        out.append(f"License: {lista[0]} State: {lista[-1]}")
-                                        flag = False
-                            print("\n")
 
-                        if "show module" in cmd:
-                            print("*** MODULE ***")
-                            out.append("*** MODULE ***")
-                            for x in output.splitlines():
-                                if x:
-                                    print(x)
-                                    out.append(x)
-                            print("\n")
 
-                        if "diagnostic" in cmd:
-                            print("*** DIAGNOSTIC ***")
-                            print(output)
-                            out.append("*** DIAGNOSTIC ***")
-                            out.append(output)
-                            print("\n")
-                        if "show system internal mts" in cmd:
-                            for x in output.split():
-                                if int(x) > 99:
-                                    print("*** SYSTEM INTERNAL MTS ***")
-                                    out.append("*** SYSTEM INTERNAL MTS ***")
-                                    print(x)
-                                    out.append(x)
-                                    print("\n")
-                        if "show int desc" in cmd:
-                            print("*** SHOW INT [BRIEF-DESC] ***")
-                            out.append("*** SHOW INT [BRIEF-DESC] ***")
-                            print(output)
-                            out.append(output)
-                            print("\n")
+
 
                         if "show port-channel summary" in cmd:
                             print("*** PORT-CHANNEL SUMMARY ***")
@@ -205,7 +249,6 @@ def main(ip):
                     f.write(ip + "# " + " " + cmd + " " + "\n")
 
         out.append("*" * 80)
-
         ssh.close()
         if len(out) > 4:
             with open(ip + ".txt", "a") as f:
@@ -214,9 +257,23 @@ def main(ip):
                         f.write(x + "\n")
                 f.write("\n")
 
+    df.to_excel(writer, sheet_name=ip, index=False)
+    workbook = writer.book
+    worksheet = writer.sheets[ip]
+    formato = workbook.add_format({'align': 'left', 'valign': 'vcenter'})
+    titulo = workbook.add_format({'bg_color': '19b2e7'})
+    worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
+                                 {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
+
+    auto_width_columns(df, worksheet, formato)
+    writer.save()
+
+
+
 
 if __name__ == '__main__':
     run(ips)
+
 
 
 

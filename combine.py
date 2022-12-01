@@ -17,8 +17,9 @@ with pd.ExcelWriter(output_excel, engine='xlsxwriter') as writer:
 
 
     for excel in excel_files:
-        sheet_name = pd.ExcelFile(excel).sheet_names[0]
-
+        sheet_name = str(excel).replace(".xlsx", "").replace("./", "")
+        if output_excel in excel:
+            continue
         df = pd.read_excel(excel)
         df.to_excel(writer, sheet_name=sheet_name, index=False)
         workbook = writer.book

@@ -15,8 +15,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'cisco!123'
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'",
@@ -36,8 +36,6 @@ commands = ["show ver | in  'kickstart:|system:'",
 archivo = "salida.txt"
 
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
-
-
 
 
 def combinar():
@@ -67,9 +65,8 @@ def combinar():
 def run(ip):
     try:
         with multiprocessing.Pool(processes=20) as pool:
-            pool.map(main, ip)
-
-
+            process_map(main, ip)
+            #pool.map(main, ip)
     except KeyboardInterrupt:
         sys.exit(1)
     except Exception as e:
@@ -296,8 +293,7 @@ def main(ip):
             writer.save()
 
 
-
 if __name__ == '__main__':
-    #run(ips)
-    r = process_map(main, ips, max_workers=20)
+    run(ips)
+    #r = process_map(main, ips, max_workers=20)
     combinar()

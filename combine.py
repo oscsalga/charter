@@ -1,7 +1,5 @@
 import pandas as pd
-from glob import glob
 import os
-
 
 output_excel = r'all_excels.xlsx'
 
@@ -13,16 +11,15 @@ def auto_width_columns(df, worksheet, formato):
 #List all excel files in folder
 
 
+excel_files = [os.path.join(root, file) for root, folder, files in os.walk(".") for file in files if file.endswith(".xlsx")]
 
-with pd.ExcelWriter(output_excel) as writer:
+with pd.ExcelWriter(output_excel, engine='xlsxwriter') as writer:
 
 
-    for file in glob('*.xlsx'):
-        if output_excel in file:
-            continue
-        sheet_name = str(pd.ExcelFile(file).sheet_names[0]).replace("xlsx", "")
+    for excel in excel_files:
+        sheet_name = pd.ExcelFile(excel).sheet_names[0]
 
-        df = pd.read_excel(file)
+        df = pd.read_excel(excel)
         df.to_excel(writer, sheet_name=sheet_name, index=False)
         workbook = writer.book
         worksheet = writer.sheets[str(sheet_name)]

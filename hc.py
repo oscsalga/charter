@@ -3,10 +3,9 @@ import datetime
 import time
 import multiprocessing
 import sys
-import json
 import re
 import pandas as pd
-import glob
+import os
 
 
 with open('equipos') as f:
@@ -36,6 +35,31 @@ archivo = "salida.txt"
 
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
 
+def combinar():
+    output_excel = r'all_excels.xlsx'
+    excel_files = [os.path.join(root, file) for root, folder, files in os.walk(".") for file in files if
+                   file.endswith(".xlsx")]
+
+    with pd.ExcelWriter(output_excel, engine='xlsxwriter') as writer:
+
+        for excel in excel_files:
+            sheet_name = str(excel).replace(".xlsx", "").replace("./", "")
+            if output_excel in excel:
+                continue
+            df = pd.read_excel(excel, engine="openpyxl")
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+            workbook = writer.book
+            worksheet = writer.sheets[str(sheet_name)]
+            formato = workbook.add_format({'align': 'left', 'valign': 'vcenter'})
+            titulo = workbook.add_format({'bg_color': '19b2e7'})
+            worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
+                                         {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
+            format = workbook.add_format({'text_wrap': True})
+
+            # Setting the format column A-B width to 50.
+            worksheet.set_column('A:B', 70, format)
+
+
 def run(ip):
     try:
         with multiprocessing.Pool(processes=20) as pool:
@@ -49,8 +73,8 @@ def run(ip):
 
 def auto_width_columns(df, worksheet, formato):
     for s, col in enumerate(df.columns):
-        column_len = max(df[col].astype(str).str.len().max(), len(col))
-        worksheet.set_column(s, s, column_len - 10, formato)
+        column_len = max(df[col].astype(str).str.len().max(), len(col) + 2)
+        worksheet.set_column(s, s, column_len, formato)
 
 
 def main(ip):
@@ -76,7 +100,7 @@ def main(ip):
             f.write(ip + ' No se conecta\n\n')
 
     if tunnel:
-        
+
         path = ip + ".xlsx"  # NOMBRE DEL OUTPUT FILE
         writer = pd.ExcelWriter(path, engine='xlsxwriter')
         print("*" * 50)
@@ -258,141 +282,10 @@ def main(ip):
             df.to_excel(writer, sheet_name=ip, index=False)
             workbook = writer.book
             worksheet = writer.sheets[ip]
-            formato = workbook.add_format({'align': 'left', 'valign': 'vcenter'})
-            titulo = workbook.add_format({'bg_color': '19b2e7'})
-            worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
-                                         {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
 
-            auto_width_columns(df, worksheet, formato)
             writer.save()
 
 
 if __name__ == '__main__':
     run(ips)
-
-
-
-
-#  show vrf | json
-#  show license usage | json
-#  show ver | in  "kickstart:|system:"     \d.*
-#  show mod   [a-zA-Z]+?(?=\s*?[^\w]*?$)
-#  show diagnostic result module all | inc "> F"
-#  show system internal mts buffer summa | ex node |  cut -f 3-0
-#  show int desc | ex -- |  egrep "Eth|Po" | ex Port | cut -d " " -f 1 | sed 's/\s*/show int br | egrep -w  /' | vsh | in down
-#  show port-channel summary | in SD | cut -d " " -f 1 | sed 's/\s*/show int port-channel / ' | vsh | in "No operational"
-#  show vpc br | json
-#  show system resources | json
-#  FALTA show ip bgp summary vrf all | inc [0-9,1-3].[0-9,1-3].[0-9,1-3]
-#  FALTA show ipv6 bgp summary vrf all | inc [a-f0-9,1-4]:[a-f0-9,1-4]
-#  show fex | json
-
-
-
-
-
-
-# show env todo lo de abajo
-
-
-data = """{
-  "fandetails": {
-    "TABLE_faninfo": {
-      "ROW_faninfo": [
-        {
-          "fanname": "Chassis-1", 
-          "fanmodel": "N5548P-FAN", 
-          "fanhwver": "--", 
-          "fanstatus": "ok"
-        }, 
-        {
-          "fanname": "Chassis-2", 
-          "fanmodel": "N5548P-FAN", 
-          "fanhwver": "--", 
-          "fanstatus": "ok"
-        }, 
-        {
-          "fanname": "PS-1", 
-          "fanmodel": "--", 
-          "fanhwver": "--", 
-          "fanstatus": "absent"
-        }, 
-        {
-          "fanname": "PS-2", 
-          "fanmodel": "N55-PAC-750W", 
-          "fanhwver": "--", 
-          "fanstatus": "ok"
-        }
-      ]
-    }, 
-    "fan_filter_status": "NotSupported"
-  }, 
-  "TABLE_tempinfo": {
-    "ROW_tempinfo": {
-      "tempmod": "1", 
-      "sensor": "Outlet", 
-      "majthres": "67", 
-      "minthres": "58", 
-      "curtemp": "29", 
-      "alarmstatus": "ok"
-    }
-  }, 
-  "powersup": {
-    "voltage_level": 12, 
-    "TABLE_psinfo": {
-      "ROW_psinfo": [
-        {
-          "psnum": 1, 
-          "psmodel": "------------", 
-          "watts": "0.00", 
-          "amps": "0.00", 
-          "ps_status": "absent"
-        }, 
-        {
-          "psnum": 2, 
-          "psmodel": "N55-PAC-750W", 
-          "watts": "780.00", 
-          "amps": "65.00", 
-          "ps_status": "ok"
-        }
-      ]
-    }, 
-    "TABLE_mod_pow_info": {
-      "ROW_mod_pow_info": [
-        {
-          "modnum": "1", 
-          "mod_model": "N5K-C5548P-SUP", 
-          "watts_requested": "468.00", 
-          "amps_requested": "39.00", 
-          "watts_alloced": "468.00", 
-          "amps_alloced": "39.00", 
-          "modstatus": "powered-up"
-        }, 
-        {
-          "modnum": "3", 
-          "mod_model": "N55-DL2", 
-          "watts_requested": "24.00", 
-          "amps_requested": "2.00", 
-          "watts_alloced": "24.00", 
-          "amps_alloced": "2.00", 
-          "modstatus": "powered-up"
-        }
-      ]
-    }, 
-    "power_summary": {
-      "ps_redun_mode": "redundant", 
-      "ps_redun_op_mode": "Non-redundant", 
-      "tot_pow_capacity": "780.00", 
-      "reserve_sup": "468.00", 
-      "pow_used_by_mods": "24.00", 
-      "available_pow": "288.00"
-    }
-  }
-}"""
-
-
-
-"""print(find_values('fanstatus', data))
-print(find_values('ps_status', data))
-print(find_values('modstatus', data))
-print(find_values('alarmstatus', data))"""
+    combinar()

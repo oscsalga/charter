@@ -73,7 +73,8 @@ def run(ip):
     except KeyboardInterrupt:
         sys.exit(1)
     except Exception as e:
-        print(e)
+        pass
+        #print(e)
 
 
 def auto_width_columns(df, worksheet, formato):
@@ -176,7 +177,7 @@ def main(ip):
                             out.append("*** MODULE ***")
                             for x in output.splitlines():
                                 if x:
-                                    print(x)
+                                    #print(x)
                                     out.append(x)
                                     cell.append(x)
                             df.at[indice, 'Value'] = '\n'.join(cell)
@@ -275,7 +276,7 @@ def main(ip):
                     with open("ERROR.txt", "a") as f:
                         f.write(ip + "# " + " " + cmd + " " + "\n")
             except Exception as e:
-                print(e)
+                #print(e)
                 with open("ERROR.txt", "a") as f:
                     f.write(ip + "# " + " " + cmd + " " + "\n")
 

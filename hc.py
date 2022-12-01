@@ -6,6 +6,9 @@ import sys
 import re
 import pandas as pd
 import os
+import time
+from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 
 with open('equipos') as f:
@@ -32,8 +35,10 @@ commands = ["show ver | in  'kickstart:|system:'",
 
 archivo = "salida.txt"
 
-
 #commands = ["show license usage | ex * | ex --- | ex Feat | ex Coun"]
+
+
+
 
 def combinar():
     output_excel = r'all_excels.xlsx'
@@ -59,11 +64,11 @@ def combinar():
             # Setting the format column A-B width to 50.
             worksheet.set_column('A:B', 70, format)
 
-
 def run(ip):
     try:
         with multiprocessing.Pool(processes=20) as pool:
             pool.map(main, ip)
+
 
     except KeyboardInterrupt:
         sys.exit(1)
@@ -78,12 +83,13 @@ def auto_width_columns(df, worksheet, formato):
 
 
 def main(ip):
-
     out = []
     ssh = None
     tunnel = False
     df = {'Command': commands}
     df = pd.DataFrame(df, columns=['Command', 'Value'])
+
+
 
     try:
 
@@ -103,13 +109,16 @@ def main(ip):
 
         path = ip + ".xlsx"  # NOMBRE DEL OUTPUT FILE
         writer = pd.ExcelWriter(path, engine='xlsxwriter')
-        print("*" * 50)
+        """print("*" * 50)
         print("*** HC ***")
         print("*" * 50)
         print("\n")
-        print('Hostname: ' + ip)
+        print(f"Hostname: {ip}")"""
+
         for indice, cmd in enumerate(commands):
             cell = []
+
+
             try:
                 stdin, stdout, stderr = ssh.exec_command(cmd, timeout=90)
                 outlines = stdout.readlines()
@@ -119,30 +128,30 @@ def main(ip):
                 if "error" not in output:
                     if output:
                         if "show ver" in cmd:
-                            print("*** VERSION ***")
+                            #print("*** VERSION ***")
                             versiones = re.findall("\d.*", output)
-                            print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
+                            #print(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                             out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                             out.append("*" * 50)
-                            print("*" * 50)
+                            #print("*" * 50)
                             df.at[indice, 'Value'] = f"System {versiones[1]} Kickstart: {versiones[0]}"
-                            print("\n")
+                            #print("\n")
 
                         if "show vrf" in cmd:
 
                             if output.splitlines():
-                                print("*** VRF ***")
+                                #print("*** VRF ***")
                                 out.append("*** VRF ***")
                                 for x in output.splitlines():
                                     lista = x.split()
                                     if lista:
                                         if lista[2] == "Down":
                                             cell.append(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
-                                            print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
+                                            #print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                             out.append(
                                                 f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                 df.at[indice, 'Value'] = '\n'.join(cell)
-                                print("\n")
+                                #print("\n")
 
                         if "show license usage" in cmd:
 
@@ -152,18 +161,18 @@ def main(ip):
                                 if lista:
                                     if lista[-1] != "-":
                                         if flag:
-                                            print("*** LICENSE ***")
+                                            #print("*** LICENSE ***")
                                             out.append("*** LICENSE ***")
-                                        print(f"License: {lista[0]} State: {lista[-1]}")
+                                        #print(f"License: {lista[0]} State: {lista[-1]}")
                                         out.append(f"License: {lista[0]} State: {lista[-1]}")
                                         cell.append(f"License: {lista[0]} State: {lista[-1]}")
                                         flag = False
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "show module" in cmd:
 
-                            print("*** MODULE ***")
+                            #print("*** MODULE ***")
                             out.append("*** MODULE ***")
                             for x in output.splitlines():
                                 if x:
@@ -171,96 +180,96 @@ def main(ip):
                                     out.append(x)
                                     cell.append(x)
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "diagnostic" in cmd:
-                            print("*** DIAGNOSTIC ***")
-                            print(output)
+                            #print("*** DIAGNOSTIC ***")
+                            #print(output)
                             out.append("*** DIAGNOSTIC ***")
                             out.append(output)
                             cell.append(output)
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "show system internal mts" in cmd:
                             for x in output.split():
                                 if int(x) > 99:
-                                    print("*** SYSTEM INTERNAL MTS ***")
+                                    #print("*** SYSTEM INTERNAL MTS ***")
                                     out.append("*** SYSTEM INTERNAL MTS ***")
-                                    print(x)
+                                    #print(x)
                                     out.append(x)
                                     cell.append(x)
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "show int desc" in cmd:
-                            print("*** SHOW INT [BRIEF-DESC] ***")
+                            #print("*** SHOW INT [BRIEF-DESC] ***")
                             out.append("*** SHOW INT [BRIEF-DESC] ***")
-                            print(output)
+                            #print(output)
                             out.append(output)
                             df.at[indice, 'Value'] = output
-                            print("\n")
+                            #print("\n")
 
                         if "show port-channel summary" in cmd:
-                            print("*** PORT-CHANNEL SUMMARY ***")
-                            print(output)
+                            #print("*** PORT-CHANNEL SUMMARY ***")
+                            #print(output)
                             out.append("*** PORT-CHANNEL SUMMARY ***")
                             out.append(output)
                             df.at[indice, 'Value'] = output
-                            print("\n")
+                            #print("\n")
 
                         if "show vpc br" in cmd:
-                            print("*** VPC BRIEF ***")
+                            #print("*** VPC BRIEF ***")
                             out.append("*** VPC BRIEF ***")
-                            print(output)
+                            #print(output)
                             out.append(output)
                             df.at[indice, 'Value'] = output
-                            print("\n")
+                            #print("\n")
 
                         if "show system resources" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if lista:
                                     if float(lista[-2].replace("%", "")) < 60.0:
-                                        print("*** SYSTEM RESOURCES ***")
+                                        #print("*** SYSTEM RESOURCES ***")
                                         out.append("*** SYSTEM RESOURCES ***")
-                                        print(" ".join(lista[-2:]))
+                                        #print(" ".join(lista[-2:]))
                                         out.append(" ".join(lista[-2:]))
                                         cell.append(" ".join(lista[-2:]))
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "show fex" in cmd:
-                            print("*** FEX ***")
+                            #print("*** FEX ***")
                             out.append("*** FEX ***")
-                            print(" ".join(output.splitlines()))
+                            #print(" ".join(output.splitlines()))
                             out.append(" ".join(output.splitlines()))
                             df.at[indice, 'Value'] = '\n'.join(output.splitlines())
-                            print("\n")
+                            #print("\n")
 
                         if "show ip bgp summary vrf all" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if "Idle" in lista:
-                                    print("*** BGP ***")
+                                    #print("*** BGP ***")
                                     out.append("*** BGP ***")
-                                    print(" ".join(lista))
+                                    #print(" ".join(lista))
                                     out.append(" ".join(lista))
                                     cell.append(" ".join(lista))
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                         if "show fabricpath isis interface br | in Up | ex Interface" in cmd:
                             for x in output.splitlines():
                                 lista = x.split()
                                 if "Up/Ready" not in lista:
-                                    print("*** FABRICPATH TOPOLOGY ***")
+                                    #print("*** FABRICPATH TOPOLOGY ***")
                                     out.append("*** FABRICPATH TOPOLOGY ***")
-                                    print(" ".join(lista))
+                                    #print(" ".join(lista))
                                     out.append(" ".join(lista))
                                     cell.append(" ".join(lista))
                             df.at[indice, 'Value'] = '\n'.join(cell)
-                            print("\n")
+                            #print("\n")
 
                 else:
                     with open("ERROR.txt", "a") as f:
@@ -286,6 +295,8 @@ def main(ip):
             writer.save()
 
 
+
 if __name__ == '__main__':
-    run(ips)
+    #run(ips)
+    r = process_map(main, ips, max_workers=20)
     combinar()

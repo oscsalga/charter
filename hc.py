@@ -294,6 +294,9 @@ def main(ip):
 
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     run(ips)
     #r = process_map(main, ips, max_workers=20)
     combinar()
+    finish = time.perf_counter()
+    print('\nFinish ' + str(round(finish - start, 2)) + ' second(s)')

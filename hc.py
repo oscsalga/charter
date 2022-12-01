@@ -6,6 +6,7 @@ import sys
 import json
 import re
 import pandas as pd
+import os
 
 
 with open('equipos') as f:
@@ -271,7 +272,10 @@ def main(ip):
 
 if __name__ == '__main__':
     run(ips)
-
+    path = './'
+    filenames = [file for file in os.listdir(path) if file.endswith('.xlsx')]
+    df = pd.concat([pd.read_excel(path + file) for file in filenames], ignore_index=True)
+    df.to_excel(r'export_dataframe.xlsx', index=False)
 
 
 

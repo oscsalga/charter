@@ -14,8 +14,8 @@ with open('equipos') as f:
     ips = f.read().splitlines()
 
 port = 22
-username = 'p3121751'
-password = 'Ximena12.'
+username = 'admin'
+password = 'CXlabs.123'
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d")
 commands = ["show ver | in  'kickstart:|system:'",
@@ -29,7 +29,8 @@ commands = ["show ver | in  'kickstart:|system:'",
             "show vpc br | in status | in fail", "show system resources | in idle | head lines 1",
             "show fex | ex Online | ex FEX | ex Number | ex ----------------",
             "show ip bgp summary vrf all | inc '^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}).*'",
-            "show fabricpath isis interface br | in Up | ex Interface"]
+            "show fabricpath isis interface br | in Up | ex Interface",
+            "show jsjb jje"]
 
 
 archivo = "salida.txt"
@@ -53,9 +54,8 @@ def combinar():
             df = pd.read_excel(excel, engine="openpyxl")
             excl_list.append(df)
         excl_merged = pd.concat(excl_list, axis=1)
-
-        #excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
-        excl_merged.insert(0, "Commands", commands)
+        excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
+        excl_merged.insert(0, "Commands", "commands")
         excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
 
 
@@ -100,9 +100,14 @@ def main(ip):
     ssh = None
     tunnel = False
 
+
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        if "10" in ip:
+            password = "cisco!123"
+        else:
+            password = "CXlabs.123"
         ssh.connect(ip, port, username, password, timeout=200,
                     allow_agent=False,
                     look_for_keys=False)
@@ -126,8 +131,6 @@ def main(ip):
 
         for indice, cmd in enumerate(commands):
             cell = []
-
-
             try:
                 stdin, stdout, stderr = ssh.exec_command(cmd, timeout=200)
                 outlines = stdout.readlines()
@@ -143,7 +146,7 @@ def main(ip):
                             out.append(f'Hostname: {ip} System {versiones[1]} Kickstart: {versiones[0]}')
                             out.append("*" * 50)
                             #print("*" * 50)
-                            df.at[indice, ip] = f"System {versiones[1]} Kickstart: {versiones[0]}"
+                            df.at[indice, ip] = f"Version: \nSystem {versiones[1]} Kickstart: {versiones[0]}"
                             #print("\n")
 
                         if "show vrf" in cmd:
@@ -158,7 +161,8 @@ def main(ip):
                                             #print(f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
                                             out.append(
                                                 f"VRF: {lista[0]} State: {lista[2]} Reason: {' '.join(lista[3:])}")
-                                df.at[indice, ip] = "VRF in Down State:\n" + '\n'.join(cell)
+                                if out:
+                                    df.at[indice, ip] = "VRF in Down State:\n" + '\n'.join(cell)
                                 #print("\n")
 
                         if "show license usage" in cmd:
@@ -174,8 +178,13 @@ def main(ip):
                                         out.append(f"License: {lista[0]} State: {lista[-1]}")
                                         cell.append(f"{lista[0]} State: {lista[-1]}")
                                         flag = False
-                                df.at[indice, ip] = '\n'.join(cell)
-                            df.at[indice, ip] = "License Issues:\n"
+
+                            if cell:
+                                mensaje = "License Issues:"
+                            else:
+                                mensaje = "Pass"
+
+                            df.at[indice, ip] = mensaje + "\n" + '\n'.join(cell)
                             #print("\n")
 
                         if "show module" in cmd:
@@ -307,8 +316,6 @@ def main(ip):
                 f.write("\n")
 
             df.to_excel(writer, sheet_name=ip, index=False)
-            workbook = writer.book
-            worksheet = writer.sheets[ip]
 
             writer.save()
 

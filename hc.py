@@ -54,7 +54,7 @@ def combinar():
             excl_list.append(df)
         excl_merged = pd.concat(excl_list, axis=1)
 
-        excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
+        #excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
         excl_merged.insert(0, "Commands", commands)
         excl_merged.to_excel(writer, sheet_name="MASTER", index=False)
 
@@ -207,9 +207,10 @@ def main(ip):
                                     #print(x)
                                     out.append(x)
                                     cell.append(x)
-                                else:
-                                    cell.append("Pass")
-                            df.at[indice, ip] = '\n'.join(cell)
+                            if cell:
+                                df.at[indice, ip] = '\n'.join(cell)
+                            else:
+                                df.at[indice, ip] = "Pass"
                             #print("\n")
 
                         if "show int desc" in cmd:

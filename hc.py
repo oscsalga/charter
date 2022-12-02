@@ -67,8 +67,8 @@ def combinar():
         worksheet.conditional_format(0, 0, 0, worksheet.dim_colmax,
                                      {'criteria': ">", 'value': -1, 'type': 'cell', 'format': titulo})
 
-        print(len(excl_merged.index))
-        worksheet.set_column(0, len(excl_merged.index), 70, format)
+        #print(len(excl_merged.axes[1]) - 1)
+        worksheet.set_column(0, len(excl_merged.axes[1]) - 1, 70, format)
 
 
 
@@ -174,7 +174,8 @@ def main(ip):
                                         out.append(f"License: {lista[0]} State: {lista[-1]}")
                                         cell.append(f"{lista[0]} State: {lista[-1]}")
                                         flag = False
-                            df.at[indice, ip] = "License Issues:\n" + '\n'.join(cell)
+                                df.at[indice, ip] = '\n'.join(cell)
+                            df.at[indice, ip] = "License Issues:\n"
                             #print("\n")
 
                         if "show module" in cmd:
